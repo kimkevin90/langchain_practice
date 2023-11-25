@@ -2,9 +2,9 @@
 
 ## Table of Contents
 
-- [Chapter1](#ChatGPT and LangChain Integration)
+- [Chapter1](#chapter1)
 
-## ChatGPT and LangChain Integration
+## Chapter1
 
 ![image](https://github.com/kimkevin90/langchain_practice/assets/65535673/6096b3f2-4800-48a3-8e17-ca296a2a4357)
 
