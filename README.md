@@ -2,8 +2,7 @@
 
 ## Table of Contents
 
-- [Chapter1](#chapter1_ChatGPT and LangChain Integration)
-
+- [Chapter1](#ChatGPT and LangChain Integration)
 
 ## Chapter1
 
