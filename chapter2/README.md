@@ -1,8 +1,14 @@
-## Deep Dive into Interactions with Memory Management
+# LangChain 대화 메모리 시스템
 
-- pip install langchain openai
-- pip install python-dotenv
+이 문서에서는 LangChain에서 사용되는 두 가지 대화 메모리 시스템, `ConversationBufferMemory`와 `ConversationSummaryMemory`의 차이점과 각각의 특징에 대해 설명합니다.
 
-### 1. ConversationBufferMemory
+## `ConversationBufferMemory`
 
-- ConversationBufferMemory(memory_key='messages', return_messages=True)는 대화 중의 메시지들을 'messages'라는 키로 저장하고 관리하며, 필요한 경우 이 메시지들을 반환하여 대화에 활용할 수 있도록 하는 기능을 제공합니다. 이를 통해 인공지능은 이전 대화의 내용을 참조하면서 사용자와 더욱 연속적이고 의미 있는 대화를 이어갈 수 있습니다.
+### 설명
+- `ConversationBufferMemory`는 대화의 모든 메시지를 순서대로 저장하고 관리하는 메모리 시스템입니다.
+- 대화 중 발생한 모든 텍스트 내용이 이 시스템에 저장됩니다.
+
+### 예시
+```python
+memory = ConversationBufferMemory(memory_key='messages', return_messages=True)
+```
