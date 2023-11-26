@@ -1,6 +1,6 @@
 # Langcahin Practice
 
-## Table of Contents
+## Contents
 
 - [Chapter1](#chapter1)
 - [Chapter2](#chapter2)
