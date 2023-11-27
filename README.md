@@ -4,6 +4,7 @@
 
 - [Chapter1](#chapter1)
 - [Chapter2](#chapter2)
+- [Chapter3](#chapter3)
 
 ## Chapter1
 
@@ -24,3 +25,12 @@
 1. How state is stored
 2. How state is queried
 3. What is the difference between ConversationSummaryMemory and ConversationBufferMemory?
+
+## Chapter3
+
+`Create Custom Retriever`:
+
+1. How to get txt data
+2. Convert Text to Vector
+3. Using Chroma Vector Storage
+4. Create a Custom Retriever based on the information in the vector storage and combine it with ChatOpenAI
