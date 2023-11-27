@@ -28,6 +28,8 @@
 
 ## Chapter3
 
+![image](https://github.com/kimkevin90/langchain_practice/assets/65535673/6c6993a8-1022-4077-8af9-464090e7b0e3)
+
 `Create Custom Retriever`:
 
 1. How to get txt data
