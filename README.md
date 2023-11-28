@@ -5,6 +5,7 @@
 - [Chapter1](#chapter1)
 - [Chapter2](#chapter2)
 - [Chapter3](#chapter3)
+- [Chapter4](#chapter4)
 
 ## Chapter1
 
@@ -36,3 +37,15 @@
 2. Convert Text to Vector
 3. Using Chroma Vector Storage
 4. Create a Custom Retriever based on the information in the vector storage and combine it with ChatOpenAI
+
+## Chapter4
+
+![image](https://github.com/kimkevin90/langchain_practice/assets/65535673/07b1fc5f-9293-44b7-991e-801b24ecb1d1)
+
+`Empower ChatGPT with Tools and Agents`:
+
+1. Generating queries that will be run based on natural language questions
+2. Creating chatbots that can answer questions based on database data
+3. utilizing SystemManager and ConversationBufferMemory to maintain context and record conversations
+
+
