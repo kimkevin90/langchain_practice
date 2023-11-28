@@ -4,3 +4,4 @@ __pycache__
 .env
 emb
 temp
+.DS_Store
