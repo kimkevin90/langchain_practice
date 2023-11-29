@@ -49,3 +49,7 @@ redis-server
 ```
 flask --app app.web init-db
 ```
+
+# Record
+1. create_embeddings_for_pdf 함수 생성 후, pdfLoader 및 chunk filter 적용
+2. pinecone.io 벡터스토어사용
