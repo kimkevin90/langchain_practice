@@ -20,14 +20,17 @@ def list():
 @login_required
 @handle_file_upload
 def upload_file(file_id, file_path, file_name):
+    # 파일 요청 받ㅣ
     res, status_code = files.upload(file_path)
     if status_code >= 400:
         return res, status_code
 
+    # DB에 레코드 기록
     pdf = Pdf.create(id=file_id, name=file_name, user_id=g.user.id)
 
     # TODO: Defer this to be processed by the worker
-    process_document(pdf.id)
+    # worker가 작업하도록 요청
+    process_document.delay(pdf.id)
 
     return pdf.as_dict()
 
