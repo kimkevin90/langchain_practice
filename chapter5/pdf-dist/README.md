@@ -54,3 +54,17 @@ flask --app app.web init-db
 1. create_embeddings_for_pdf 함수 생성 후, pdfLoader 및 chunk filter 적용
 2. pinecone.io 벡터스토어사용
 3. 메시지 큐를 활용하여 create_embeddings_for_pdf로직을 worker에게 위임
+4. 채팅 내역에 관한 기록을 Database에 기록하고 이를 체인에 제공한다.
+ - 이전 채팅 내역에 대한 기록을 해야지 전체적인 context 유지 가능
+ - 이때, 메모리나, 프론트에서 기록 시, 데이터 휘발 가능성 존재
+5. retrieval 사용시 ConversationalRetrieval Chain 사용
+ - 모호한 질문에 대해 이전 대화 내역 및 답변을 참고하여 retriever 적용
+ - 구성요소:
+ Condese Question Chain
+ Combine Docs Chain 
+ - 위 두체인은 단일 메모리 지원
+ - Flow :
+ 맨처음 질문 시, Condese Question Chain 생략 후, Combine Docs Chain으로 바로 이동하고 메모리에 질문과 대답을 기록한다.
+ 두번째 질문 시, Condese Question Chain에서 메모리에 질문과 대답을 요약하여 Combine Docs Chain으로 전달하고 Combine Docs Chain은 retriever을 통해 대답한다.
+ - 코드 구현
+ build_chat 함수 생성하여 chat 관련 내역을 받아 build_retriever함수로 벡터 스토어에서 필터링 후retriever 생성
