@@ -33,7 +33,6 @@ def create_embeddings_for_pdf(pdf_id: str, pdf_path: str):
             "page": doc.metadata["page"],
             "text": doc.page_content,
             "pdf_id": pdf_id
-        }
-    
+        }    
 
     vector_store.add_documents(docs)

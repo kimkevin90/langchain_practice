@@ -57,6 +57,7 @@ flask --app app.web init-db
 4. 채팅 내역에 관한 기록을 Database에 기록하고 이를 체인에 제공한다.
  - 이전 채팅 내역에 대한 기록을 해야지 전체적인 context 유지 가능
  - 이때, 메모리나, 프론트에서 기록 시, 데이터 휘발 가능성 존재
+
 5. retrieval 사용시 ConversationalRetrieval Chain 사용
  - 모호한 질문에 대해 이전 대화 내역 및 답변을 참고하여 retriever 적용
  - 구성요소:
@@ -68,3 +69,9 @@ flask --app app.web init-db
  두번째 질문 시, Condese Question Chain에서 메모리에 질문과 대답을 요약하여 Combine Docs Chain으로 전달하고 Combine Docs Chain은 retriever을 통해 대답한다.
  - 코드 구현
  build_chat 함수 생성하여 chat 관련 내역을 받아 build_retriever함수로 벡터 스토어에서 필터링 후retriever 생성
+
+6. SqlMessageHistory
+ - 채팅 내역에 대한 지속성 유지를 위해 Memory 생성
+ - ChatMessageHistory기능과 유사하게 메시지를 받아 DB에 저장한 다음 요청이 있을 때마다 해당 목록을 반환
+ - conversation_id로 대화 내역 조회
+ - 사용자 대화 요청 시, ConverationBufferMemory는 SqlMessageHistory통해 대화 내역 참조
