@@ -75,3 +75,8 @@ flask --app app.web init-db
  - ChatMessageHistory기능과 유사하게 메시지를 받아 DB에 저장한 다음 요청이 있을 때마다 해당 목록을 반환
  - conversation_id로 대화 내역 조회
  - 사용자 대화 요청 시, ConverationBufferMemory는 SqlMessageHistory통해 대화 내역 참조
+
+7. ConversationalRetrievalChain
+ - LLM, Retriever, Memory로 체인을 생성하여 5,6항목을 결합한다.
+ - build_llm으로 ChatOpenAi LLM 생성
+ - build_chat에서 ConversationalRetrievalChain 생성 후 retriever, llm, memory 적용
