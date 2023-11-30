@@ -80,3 +80,17 @@ flask --app app.web init-db
  - LLM, Retriever, Memory로 체인을 생성하여 5,6항목을 결합한다.
  - build_llm으로 ChatOpenAi LLM 생성
  - build_chat에서 ConversationalRetrievalChain 생성 후 retriever, llm, memory 적용
+
+8. Testing Streaming Chain
+ - 섹션 10
+ - 스트리밍을 활용하여 chunk 단위로 response 진행
+ - streaming=True 옵션
+    -> openAiServer에서는 chunk단위로 결과를 streaming한다. 하지만 LLMChain은 일반 응답일 경우 모든
+    응답이 올때까지 리턴하지 않는다.
+  - 코드 구현:
+    StreamingHandler 생성
+    -> openApi 요청 시, 스트리밍 토큰을 얻고 queue에 저장한다.
+    StreamingChain 생성
+    -> stream 메소드를 오버라이드하고, 스트리밍 문자열을 생성한다.
+    -> chain이 실행되는 과정(self(input))은 다른스레드에서 실행시키고 queue에 오는 token을 처리한다.
+    -> 스트리밍 데이터를 on_llm_new_token에서 얻을 수 있어야한다. -> Queue로 해결
