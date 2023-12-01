@@ -94,3 +94,8 @@ flask --app app.web init-db
     -> stream 메소드를 오버라이드하고, 스트리밍 문자열을 생성한다.
     -> chain이 실행되는 과정(self(input))은 다른스레드에서 실행시키고 queue에 오는 token을 처리한다.
     -> 스트리밍 데이터를 on_llm_new_token에서 얻을 수 있어야한다. -> Queue로 해결
+  
+  - 섹션11
+  - 기존 queue는 모든 요청에 하나의 queue를 사용하므로, 여러사용자의 요청시 문제발생
+  - 체인 실행 시, queue와 handler를 생성하도록 StreamingChain의 stream 메소드를 변경한다.
+  - 확장성 고려하여, StreamableChain 생성 후, 필요에 따른 Chain적용하도록 변경

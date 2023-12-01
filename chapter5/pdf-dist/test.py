@@ -42,7 +42,7 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{content}")
 ])
 
-class StreamingChain(LLMChain):
+class StreamableChain:
     # stream 메소드는 별도의 스레드에서 실행됩니다. 이를 통해 메인 프로그램의 실행을 차단하지 않고, 대화 처리를 비동기적으로 수행할 수 있습니다.
     def stream(self, input):
         queue = Queue()
@@ -64,10 +64,14 @@ class StreamingChain(LLMChain):
                 break
             yield token
 
+# 추후에 LLMChain말고 conversationChain등도 가능하도록 한다.
+class StreamingChain(StreamableChain, LLMChain):
+    pass
+
 chain = StreamingChain(llm=chat, prompt=prompt)
 
 '''
-StreamingChain 클래스는 LLMChain을 확장하여 스트리밍 대화 기능을 추가합니다. stream 메소드는 다음과 같이 작동합니다:
+StreamableChain 클래스는 LLMChain을 확장하여 스트리밍 대화 기능을 추가합니다. stream 메소드는 다음과 같이 작동합니다:
 비동기적 대화 처리: stream 메소드는 별도의 스레드에서 ChatOpenAI 모델을 사용하여 입력을 처리합니다. 
 이렇게 하면 메인 프로그램의 흐름을 차단하지 않고 대화를 진행할 수 있습니다.
 실시간 토큰 스트리밍: ChatOpenAI에서 생성되는 토큰들은 queue를 통해 stream 메소드에 전달됩니다. 
