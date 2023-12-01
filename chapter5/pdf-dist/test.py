@@ -9,21 +9,22 @@ from threading import Thread
 
 load_dotenv()
 
-queue = Queue()
-
 class StreamingHandler(BaseCallbackHandler):
+    def __init__(self, queue):
+        self.queue  = queue
+
     def on_llm_new_token(self, token, **kwargs):
         # 각 chunk 텍스트를 Queue에 저장
-        queue.put(token)
+        self.queue.put(token)
 
     # 언어 모델이 응답을 완료했을 때 호출됩니다.
-    # 스트리밍 작업의 종료를 알리기 위해 queue에 None을 추가합니다.
+    # 스트리밍 작업의 종료를 알리기 위해 self.queue에 None을 추가합니다.
     def on_llm_end(self, response, **kwargs):
-        queue.put(None)
+        self.queue.put(None)
 
     # 언어 모델 처리 중 오류가 발생했을 때 호출됩니다.
     def on_llm_error(self, error, **kwargs):
-        queue.put(None)
+        self.queue.put(None)
 '''
 실시간 토큰 생성: 언어 모델이 응답을 생성하는 동안, 생성되는 각 토큰(token)을 실시간으로 반환합니다. 
 즉, 전체 응답이 완성되기 전에도 응답의 일부를 계속해서 받을 수 있습니다.
@@ -33,8 +34,8 @@ class StreamingHandler(BaseCallbackHandler):
 chat = ChatOpenAI(
     # streaming=True: OpenAI to stream to LangChain
     streaming=True,
-    # 스트리밍 핸들러 적용
-    callbacks=[StreamingHandler()]
+    # # 스트리밍 핸들러 적용 -> StreamingChain의 stream 메소드로 이동
+    # callbacks=[StreamingHandler()]
 )
 
 prompt = ChatPromptTemplate.from_messages([
@@ -44,10 +45,13 @@ prompt = ChatPromptTemplate.from_messages([
 class StreamingChain(LLMChain):
     # stream 메소드는 별도의 스레드에서 실행됩니다. 이를 통해 메인 프로그램의 실행을 차단하지 않고, 대화 처리를 비동기적으로 수행할 수 있습니다.
     def stream(self, input):
+        queue = Queue()
+        handler = StreamingHandler(queue)
         # 체인을 실행시키는 메소드
         def task():
-            print('self(input) : ',self(input))
-            self(input)
+            # print('self(input) : ',self(input))
+            # 체인 실행할때 콜백함수에 handler적용
+            self(input, callbacks=[handler])
 
         # 다른 스레드에서 chain을 실행하므로 바로 while문으로 넘어가게된다.
         Thread(target=task).start()

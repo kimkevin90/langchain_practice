@@ -21,6 +21,7 @@
 	$: activeConversation = $store.activeConversationId ? getActiveConversation() : null;
 
 	function handleSubmit(event: CustomEvent<string>) {
+		console.log('이벤트발동')
 		if (onSubmit) {
 			onSubmit(event.detail, useStreaming);
 		}
