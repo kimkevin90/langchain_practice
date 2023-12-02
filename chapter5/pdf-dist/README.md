@@ -114,7 +114,10 @@ flask --app app.web init-db
   1) StreamingConversationalRetrievalChain.from_llm는 인자로 condense_question_llm를 받으므로 새로운 llm을 이에 할당한 후 streaming=False를 전달한다.
   2) StreamingHandler serialized의 kwargs의 streaming=True일 경우 핸들러 이벤트를 적용한다.
 
-
-
-
-  
+9. Self-Improving Text Generation
+ - 문제점 : 선택한 gpt3.5, pinecone의 조합이 완벽하지 않을 수 있다. 따라서, 무작의로 llm, memory, retriever를 조합하고 클라이언트에서 좋아요 등으로 평가할 수 있도록하여 최적의 조합을 찾을 수 있도록 한다.
+ - 구현방법
+  1) ComponentMaps를 생성하여, retrievers, memory, llm에 여러 솔루션들을 담는다.
+  2) 클라이언트에서 채팅 시, ComponentMaps를에서 무작위로 retriever, memory, llm을 선택하여 RetrievalChain을 생성한다.
+  3) DB에 무작위로 선택한 retriever, memory, llm을 기록하고, 응답을 보낸다.
+  4) 클라이언트에서 두번째, 세번째 계속하여 요청보내면 무작위 선택 작업을 하지 않고, DB에 기록된 세팅으로 응답을 보낸다.

@@ -42,7 +42,7 @@ def add_message_to_conversation(
         content=content,
     )
 
-
+# 유저에게 할당된 무작위 컴포넌트 조회
 def get_conversation_components(conversation_id: str) -> Dict[str, str]:
     """
     Returns the components used in a conversation
@@ -55,6 +55,7 @@ def get_conversation_components(conversation_id: str) -> Dict[str, str]:
     }
 
 
+# 무작위 컴포넌트 생성 후 기록
 def set_conversation_components(
     conversation_id: str, llm: str, retriever: str, memory: str
 ) -> None:
