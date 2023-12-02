@@ -126,3 +126,10 @@ flask --app app.web init-db
   2) build_retriever로 k 인수 설정 및 retriever_map 생성
   3) memory_map 생성
   4) build_chat 수정 : get_conversation_components, set_conversation_components 사용하여, 저장된 componentMap 설정 사용하도록 변경
+  5) 각 메시지별 평점 적용 (사진, scoreflow.png)
+  - Redis에 LLM, Retriever, Memory Score 자료구조를 통해 평균값을 저장
+  -> 이때 Redis는 평균 계산을 지원하지 않기 때문에 각 항목에 대한 Total과, Count 자료구조를 생성하여 Total 점수 / Count로 평균 적용 (사진, scoreRedisStructure.png)
+  코드 구현 :
+  -> 새로운 대화 시작 시 random_component_by_score를 통해 평균 및 가중치를 통해 llm, retriever, memory를 반환
+  -> score_conversation를 통해 llm, retriever, memory에 대한 total, count 증가
+
