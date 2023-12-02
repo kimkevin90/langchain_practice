@@ -82,7 +82,7 @@ flask --app app.web init-db
  - build_chat에서 ConversationalRetrievalChain 생성 후 retriever, llm, memory 적용
 
 8. Testing Streaming Chain
- - 섹션 10
+ 1) 섹션 10 test.py 테스트
  - 스트리밍을 활용하여 chunk 단위로 response 진행
  - streaming=True 옵션
     -> openAiServer에서는 chunk단위로 결과를 streaming한다. 하지만 LLMChain은 일반 응답일 경우 모든
@@ -95,7 +95,26 @@ flask --app app.web init-db
     -> chain이 실행되는 과정(self(input))은 다른스레드에서 실행시키고 queue에 오는 token을 처리한다.
     -> 스트리밍 데이터를 on_llm_new_token에서 얻을 수 있어야한다. -> Queue로 해결
   
-  - 섹션11
+  2) 섹션11 test.py 리팩토링
   - 기존 queue는 모든 요청에 하나의 queue를 사용하므로, 여러사용자의 요청시 문제발생
   - 체인 실행 시, queue와 handler를 생성하도록 StreamingChain의 stream 메소드를 변경한다.
   - 확장성 고려하여, StreamableChain 생성 후, 필요에 따른 Chain적용하도록 변경
+
+  3) 섹션11 실제 코드 적용
+  - build_chat의 ConversationalRetrievalChain을 StreamingConversationalRetrievalChain로 변경
+  -> 스트리밍을 위해 기존의 ConversationalRetrievalChain과 StreamableChain을 연결
+  - build_llm에 streaming 옵션 추가
+  - flask는 새로운 스레드를 사용하면 앱context 정보에 엑세스할 수 없다. 따라서, current_app.app_context()로 앱context를 전달한다.
+  4) 섹션 11_스트리밍 시, Condese Question Chain 오작동 문제 발생한다.
+  -> 스트리밍 시, Condese Question Chain은 일부 토큰을 방출하기 시작하고, 그런 다음 결국 응답을 완료하게 되며, 이 시점에서 스트리밍 핸들러는 해당 대기열을 닫고 더 이상 토큰을 받을 것으로 예상하지 않는다고 말합니다. 따라서 압축된 질문 체인을 마치자마자 스트리밍 핸들러는 기본적으로 나머지 내용을 알려줍니다.(사진 streamproblem.png)
+  -> 결국 문제는 Condese Question Chain과 Combine Docs Chain이 동일한 LLM과 StreamingHandler를 사용해서 발생하는 것이다. 즉, StreamingHandler의 트리거 이벤트가 두 체인에서 모두 일어나기 때문이다.
+  - 해결책 :
+  Condese Question Chain에는 streaming=False로, Combine Docs Chain은 streaming=True로 하여 핸들러를 필요로 하는곳에서만 이벤트를 발생시킨다.(사진 streaming_sol.png)
+  구현 :
+  1) StreamingConversationalRetrievalChain.from_llm는 인자로 condense_question_llm를 받으므로 새로운 llm을 이에 할당한 후 streaming=False를 전달한다.
+  2) StreamingHandler serialized의 kwargs의 streaming=True일 경우 핸들러 이벤트를 적용한다.
+
+
+
+
+  
