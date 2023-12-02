@@ -9,9 +9,10 @@ def random_component_by_score(component_type, component_map):
 
     # From redis, get the hash containing the sum total scores for the given commponent_type
     values = client.hgetall(f"{component_type}_score_values")
+    # print('values : ',values)
     # From redis, get the hash containing the number of times each component has been voted on
     counts = client.hgetall(f"{component_type}_score_counts")
-
+    # print('counts : ',counts)
     # Get all the valid component names from the component map
     names = component_map.keys()
 
@@ -57,6 +58,41 @@ def score_conversation(
     client.hincrby("memory_score_values", memory, score)
     client.hincrby("memory_score_counts", memory, 1)
 
+# 사용자가 어떤 componentMap에 점수를 많이 줬는지 파악한다.
 def get_scores():
+    """
+    다양한 컴포넌트 유형과 이름에 대한 점수를 langfuse 클라이언트에서 검색하고 정리합니다.
+    점수는 중첩된 사전 형식으로 분류 및 집계되며, outer 키는 컴포넌트 유형을 나타내고.
+    outer 키는 컴포넌트 유형을, inner 키는 컴포넌트 이름을 나타내며 각 점수는 배열로 나열됩니다.
 
-    pass
+    이 함수는 langfuse 클라이언트의 스코어 엔드포인트에 액세스하여 스코어를 가져옵니다.
+    점수 이름을 JSON으로 파싱할 수 없는 경우 건너뜁니다.
+
+    :return: A dictionary organized by component type and name, containing arrays of scores.
+
+    Example:
+
+        {
+            'llm': {
+                'chatopenai-3.5-turbo': [score1, score2],
+                'chatopenai-4': [score3, score4]
+            },
+            'retriever': { 'pinecone_store': [score5, score6] },
+            'memory': { 'persist_memory': [score7, score8] }
+        }
+    """
+    aggregate = {"llm": {}, "retriever": {}, "memory": {}}
+
+    for component_type in aggregate.keys():
+        values = client.hgetall(f"{component_type}_score_values")
+        counts = client.hgetall(f"{component_type}_score_counts")
+
+        names = values.keys()
+
+        for name in names:
+            score = int(values.get(name, 1))
+            count = int(counts.get(name, 1))
+            avg = score / count 
+            aggregate[component_type][name] = [avg]
+
+    return aggregate

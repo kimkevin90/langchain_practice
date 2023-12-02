@@ -132,4 +132,5 @@ flask --app app.web init-db
   코드 구현 :
   -> 새로운 대화 시작 시 random_component_by_score를 통해 평균 및 가중치를 통해 llm, retriever, memory를 반환
   -> score_conversation를 통해 llm, retriever, memory에 대한 total, count 증가
+  -> get_scores를 통해 현재 평가된 llm, retriever, memory에대한 평균 스코어를 반환
 
