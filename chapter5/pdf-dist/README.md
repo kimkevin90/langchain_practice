@@ -125,3 +125,4 @@ flask --app app.web init-db
   1) build_llm에 model_name인수를 생성하고, llm_map으로 gpt4, gpt3.5를 인수를 자동 전달할 수 있도록 구성한다.
   2) build_retriever로 k 인수 설정 및 retriever_map 생성
   3) memory_map 생성
+  4) build_chat 수정 : get_conversation_components, set_conversation_components 사용하여, 저장된 componentMap 설정 사용하도록 변경
