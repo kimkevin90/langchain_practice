@@ -121,3 +121,5 @@ flask --app app.web init-db
   2) 클라이언트에서 채팅 시, ComponentMaps를에서 무작위로 retriever, memory, llm을 선택하여 RetrievalChain을 생성한다.
   3) DB에 무작위로 선택한 retriever, memory, llm을 기록하고, 응답을 보낸다.
   4) 클라이언트에서 두번째, 세번째 계속하여 요청보내면 무작위 선택 작업을 하지 않고, DB에 기록된 세팅으로 응답을 보낸다.
+  - 코드구현
+  1) build_llm에 model_name인수를 생성하고, llm_map으로 gpt4, gpt3.5를 인수를 자동 전달할 수 있도록 구성한다.
