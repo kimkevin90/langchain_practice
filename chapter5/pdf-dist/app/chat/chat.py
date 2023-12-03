@@ -10,6 +10,8 @@ from app.web.api import (
     get_conversation_components
 )
 from app.chat.score import random_component_by_score
+from app.chat.tracing.langfuse import langfuse
+# from langfuse.model import CreateTrace
 
 def select_component(
     component_type, component_map, chat_args
@@ -79,11 +81,19 @@ def build_chat(chat_args: ChatArgs):
 
     condense_question_llm = ChatOpenAI(streaming=False)
 
+    # trace = langfuse.trace(
+    #     CreateTrace(
+    #         id=chat_args.conversation_id,
+    #         metadata=chat_args.metadata
+    #     )
+    # )
     # 스트리밍을 위해 기존의 ConversationalRetrievalChain과 StreamableChain을 연결
     # condense_question_llm streaming=False로 설정하여 condense_question_chain시에는 미발동 적용
     return StreamingConversationalRetrievalChain.from_llm(
         llm=llm,
         memory=memory,
         condense_question_llm=condense_question_llm,
-        retriever=retriever
+        retriever=retriever,
+        # callbacks=[trace.getNewHandler()],
+        metadata=chat_args.metadata
     )

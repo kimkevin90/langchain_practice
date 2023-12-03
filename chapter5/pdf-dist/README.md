@@ -114,7 +114,7 @@ flask --app app.web init-db
   1) StreamingConversationalRetrievalChain.from_llm는 인자로 condense_question_llm를 받으므로 새로운 llm을 이에 할당한 후 streaming=False를 전달한다.
   2) StreamingHandler serialized의 kwargs의 streaming=True일 경우 핸들러 이벤트를 적용한다.
 
-9. Self-Improving Text Generation 
+9. 섹션 12_Self-Improving Text Generation 
  - 문제점 : 선택한 gpt3.5, pinecone의 조합이 완벽하지 않을 수 있다. 따라서, 무작의로 llm, memory, retriever를 조합하고 클라이언트에서 좋아요 등으로 평가할 수 있도록하여 최적의 조합을 찾을 수 있도록 한다.
  - 구현방법 
   1) ComponentMaps를 생성하여, retrievers, memory, llm에 여러 솔루션들을 담는다. (사진 componentmap.png)
@@ -134,3 +134,11 @@ flask --app app.web init-db
   -> score_conversation를 통해 llm, retriever, memory에 대한 total, count 증가
   -> get_scores를 통해 현재 평가된 llm, retriever, memory에대한 평균 스코어를 반환
 
+10. 섹션13_Implementing Tracing and Observability
+  1) ConversationBufferWindowMemory 적용 : ConversationBufferWindowMemory는 ConversationBufferMemory의 변형으로, 대화 중 생성된 정보를 저장하지만, 일정 범위(window) 내의 메시지만 유지합니다.
+  주요 특징
+  윈도우 기반 저장: 대화의 특정 범위(예: 최근 N개의 메시지)만을 저장합니다. 이를 통해 메모리 사용량을 제한하고, 가장 관련성 높은 대화 내용에 집중할 수 있습니다.
+  메모리 효율성: 전체 대화 기록 대신 일부만 저장함으로써 메모리 사용량을 최적화합니다.
+  최신 대화에 집중: 에이전트가 최근의 대화 내용에 더 집중하여 응답할 수 있도록 돕습니다. 이는 특히 대화가 길어질 때 유용합니다.
+  2) LangFuse사용
+  - 텍스트 생성 프로세스에 대한 데이터를 수집하여 웹사이트에 표시
