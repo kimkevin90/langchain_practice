@@ -9,6 +9,7 @@ from langfuse.client import Langfuse
 from langfuse.model import CreateTrace
 from langfuse.callback import CallbackHandler
 from langchain.schema.runnable import RunnablePassthrough
+from langchain.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 load_dotenv()
 
 handler = CallbackHandler(
@@ -16,6 +17,15 @@ handler = CallbackHandler(
     secret_key = os.environ["LANGFUSE_SECRET_KEY"],
     host="https://us.cloud.langfuse.com"
 )
+
+RESULTS_PER_QUESTION = 2
+
+ddg_search = DuckDuckGoSearchAPIWrapper()
+
+def web_search(query: str, num_results: int = RESULTS_PER_QUESTION):
+    results = ddg_search.results(query, num_results)
+    # print("web_search results : ", [r["link"] for r in results])
+    return [r["link"] for r in results]
 
 SUMMARY_TEMPLATE = """{text} 
 -----------
@@ -27,6 +37,7 @@ if the question cannot be answered using the text, imply summarize the text. Inc
 SUMMARY_PROMPT = ChatPromptTemplate.from_template(SUMMARY_TEMPLATE)
 
 def scrape_text(url: str):
+    print('scrape_text 실행!!!!1')
     # Send a GET request to the webpage
     try:
         response = requests.get(url)
@@ -49,14 +60,20 @@ def scrape_text(url: str):
 
 url = "https://blog.langchain.dev/announcing-langsmith/"
 
-page_content = scrape_text(url)[:10000]
-# print("page_content  :",page_content)
 
-chain = SUMMARY_PROMPT | ChatOpenAI(model="gpt-3.5-turbo-1106") | StrOutputParser()
+# RunnablePassthrough.assign 메소드는 Langchain 환경에서 외부 코드를 실행한 결과를 특정 변수에 할당하는 기능을 수행합니다. 이 메소드를 사용하여, Python 함수나 다른 언어의 코드를 실행한 후, 그 결과를 Langchain 내의 변수에 저장할 수 있습니다.
+scrape_and_summarize_chain = RunnablePassthrough.assign(
+    text=lambda x: scrape_text(x["url"])[:10000]
+) | SUMMARY_PROMPT | ChatOpenAI(model="gpt-3.5-turbo-1106") | StrOutputParser()
+
+# question에 대한 webUrl 획득 후  scrape_text실행, 결과는 RESULTS_PER_QUESTION 만큼의 list로 출력
+chain = RunnablePassthrough.assign(
+    urls = lambda x: web_search(x['question'])
+) | (lambda x: [{"question": x["question"], "url": u} for u in x["urls"]]) | scrape_and_summarize_chain.map()
+
 result = chain.invoke(
     {
         "question": "What is langsmith",
-        "text": page_content
     },
     config={"callbacks": [handler]}
 )
