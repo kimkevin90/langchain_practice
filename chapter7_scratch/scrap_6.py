@@ -10,6 +10,7 @@ from langfuse.client import Langfuse
 from langfuse.model import CreateTrace
 from langfuse.callback import CallbackHandler
 from langchain.schema.runnable import RunnablePassthrough
+from langchain.retrievers import ArxivRetriever
 from langchain.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 load_dotenv()
 
@@ -17,9 +18,8 @@ load_dotenv()
 과정)
 1. 질문하기
 2. search_question_chain를 활용하여 질문에 대한 프롬프트 생성
-3. 2의 프롬프트를 기반으로, web_search를 통해 질문에 대한 urls 출력
-4. scrape_text를 통해 2의 url에 대해 스크래핑
-5. 3.의 스크래핑 text를 이용하여 요약 정보 출력 후 
+3. 2의 프롬프트를 기반으로, ArxivRetriever를 이용하여 논문 검색
+5. 3의 요약 정보 출력 후 
 이때 url과, 요약정보를 join하여 collapse_list_of_lists에 전달한다.
 이를 통해 참고 자료 url을 기입할 수 있다.
 6. 5의 정보는 질문프롬프트 갯수 * url 만큼 생성되며 이를 collapse_list_of_lists로 이용햐여 합치고,
@@ -28,13 +28,15 @@ load_dotenv()
 - http://localhost:8000/research-assistant/playground/
 '''
 
+retriever = ArxivRetriever()
+
 handler = CallbackHandler(
     public_key = os.environ["LANGFUSE_PUBLIC_KEY"],
     secret_key = os.environ["LANGFUSE_SECRET_KEY"],
     host="https://us.cloud.langfuse.com"
 )
 
-RESULTS_PER_QUESTION = 3
+RESULTS_PER_QUESTION = 1
 
 ddg_search = DuckDuckGoSearchAPIWrapper()
 
@@ -80,16 +82,35 @@ def scrape_text(url: str):
 
 url = "https://blog.langchain.dev/announcing-langsmith/"
 
+# scrape_and_summarize_chain = RunnablePassthrough.assign(
+#     summary = RunnablePassthrough.assign(
+#     text=lambda x: scrape_text(x["url"])[:10000]
+# ) | SUMMARY_PROMPT | ChatOpenAI(model="gpt-3.5-turbo-1106") | StrOutputParser()
+# ) | (lambda x: f"URL: {x['url']}\n\nSUMMARY: {x['summary']}")
+
+
+# web_search_chain = RunnablePassthrough.assign(
+#     urls = lambda x: web_search(x['question'])
+# ) | (lambda x: [{"question": x["question"], "url": u} for u in x["urls"]]) | scrape_and_summarize_chain.map()
+
+SUMMARY_TEMPLATE = """{doc} 
+-----------
+Using the above text, answer in short the following question: 
+> {question}
+-----------
+if the question cannot be answered using the text, imply summarize the text. Include all factual information, numbers, stats etc if available."""
+
+SUMMARY_PROMPT = ChatPromptTemplate.from_template(SUMMARY_TEMPLATE)
+
+
 scrape_and_summarize_chain = RunnablePassthrough.assign(
-    summary = RunnablePassthrough.assign(
-    text=lambda x: scrape_text(x["url"])[:10000]
-) | SUMMARY_PROMPT | ChatOpenAI(model="gpt-3.5-turbo-1106") | StrOutputParser()
-) | (lambda x: f"URL: {x['url']}\n\nSUMMARY: {x['summary']}")
+    summary =  SUMMARY_PROMPT | ChatOpenAI(model="gpt-3.5-turbo-1106") | StrOutputParser()
+) | (lambda x: f"Title: {x['doc'].metadata['Title']}\n\nSUMMARY: {x['summary']}")
 
 
 web_search_chain = RunnablePassthrough.assign(
-    urls = lambda x: web_search(x['question'])
-) | (lambda x: [{"question": x["question"], "url": u} for u in x["urls"]]) | scrape_and_summarize_chain.map()
+    docs = lambda x: retriever.get_summaries_as_docs(x["question"])
+)| (lambda x: [{"question": x["question"], "doc": u} for u in x["docs"]]) | scrape_and_summarize_chain.map()
 
 
 # "user" 문자열은 해당 메시지가 사용자(user)에 의해 전달되었다는 것을 나타냅니다. 이는 대화의 컨텍스트를 설정하는 데 중요합니다. 대화형 시스템에서는 사용자와 시스템(또는 어시스턴트) 간의 상호작용을 모델링합니다. 각 메시지는 누가 말하고 있는지를 명확하게 하기 위해 발신자 식별자를 필요로 합니다.
@@ -149,6 +170,7 @@ chain = RunnablePassthrough.assign(
     research_summary= full_research_chain | collapse_list_of_lists
 ) | prompt | ChatOpenAI(model="gpt-3.5-turbo-1106") | StrOutputParser()
 
+handler.langfuse.flush()
 #!/usr/bin/env python
 from fastapi import FastAPI
 from langserve import add_routes
